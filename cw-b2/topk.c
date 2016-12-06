@@ -25,13 +25,12 @@ struct play
 };
 
 struct artist *read_artists(char *fname);
-void print_artist(struct artist *a);
 struct artist *add_artist(struct artist *head, struct artist *newp);
 void print_artist(struct artist *p);
 void print_artists(struct artist *head);
-struct artist *find_middle(struct artist *p);
-struct artist *merge(struct artist *a, struct artist *b);
-struct artist *sort_plays(struct artist *head);
+struct play *find_middle(struct play *p);
+struct play *merge(struct play *a, struct play *b);
+struct play *sort_plays(struct play *head);
 struct artist* sort_artists(struct artist *p , int criterion);
 struct artist *update_counts(struct artist *a, struct play *p);
 int count_plays(struct play *head);
@@ -88,13 +87,12 @@ struct artist *read_artists(char *fname){
   }
     int artist_id; 
     char artist_name;
-    int playcount;
-    fscanf(fp, "%d\t%65[^\t\n]%d\n",&artist_id, &artist_name, &playcount);
+    fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
   while(feof(fp) == 0){
  
-    creatStruct = create_artist(artist_id, artist_name, playcount);
+    creatStruct = create_artist(artist_id, artist_name);
     readPlays = add_artist(readPlays, creatStruct);
-    fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name, &playcount);
+    fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
   }  
 //feof() -- return non-zero value if the end of file is reached
 
@@ -130,19 +128,19 @@ void print_artists(struct artist *head)
     }
 }
 
-struct artist *find_middle(struct artist *p){
-  struct artist *slow = p;
-  struct artist *fast = p;
+struct play *find_middle(struct play *p){
+  struct play *slow = p;
+  struct play *fast = p;
   while(fast->next != NULL && fast->next->next != NULL){
     slow = slow->next;
     fast = fast->next->next;
   }
   return slow;
 }
-struct artist *merge(struct artist *a, struct artist *b){
-  struct artist *tmp = NULL;
-  struct artist *head = NULL;
-  struct artist *curr = NULL;
+struct play *merge(struct play *a, struct play *b){
+  struct play *tmp = NULL;
+  struct play *head = NULL;
+  struct play *curr = NULL;
 
   if(b == NULL){
     return b;
@@ -174,10 +172,10 @@ struct artist *merge(struct artist *a, struct artist *b){
   return head;
 }
 
-struct artist *sort_plays(struct artist *head){
-  struct artist *m = NULL;
-  struct artist *x = NULL;
-  struct artist *y = NULL;
+struct play *sort_plays(struct play *head){
+  struct play *m = NULL;
+  struct play *x = NULL;
+  struct play *y = NULL;
 
   if(head == NULL || head->next == NULL){
     return head;
