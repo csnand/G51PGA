@@ -31,9 +31,14 @@ void print_artists(struct artist *head);
 struct play *find_middle(struct play *p);
 struct play *merge(struct play *a, struct play *b);
 struct play *sort_plays(struct play *head);
+
+struct artist *afind_middle(struct artist *p);
+struct artist *amerge(struct artist *a, struct artist *b);
+struct artist *asort_artisrid(struct artist *head);
+struct artist *asort_playcount(struct artist *head);
+
 struct artist* sort_artists(struct artist *p , int criterion);
 struct artist *update_counts(struct artist *a, struct play *p);
-int count_plays(struct play *head);
 struct play *create_play(int id, int artist_id, int playcount);
 struct play *filter_user(int user_id, struct play *head);
 struct play *read_plays(char *file_name);
@@ -87,10 +92,11 @@ struct artist *read_artists(char *fname){
   }
     int artist_id; 
     char artist_name;
+    int playcount = 0;
     fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
   while(feof(fp) == 0){
  
-    creatStruct = create_artist(artist_id, artist_name);
+    creatStruct = create_artist(artist_id, artist_name, playcount);
     readPlays = add_artist(readPlays, creatStruct);
     fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
   }  
@@ -187,13 +193,93 @@ struct play *sort_plays(struct play *head){
   return merge(sort_plays(x), sort_plays(y));
 }
 
+struct artist *afind_middle(struct artist *p){
+  struct artist *slow = p;
+  struct artist *fast = p;
+  while(fast->next != NULL && fast->next->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  return slow;
+}
+struct artist *amerge(struct artist *a, struct artist *b){
+  struct artist *tmp = NULL;
+  struct artist *head = NULL;
+  struct artist *curr = NULL;
+
+  if(b == NULL){
+    return b;
+  }else if(b == NULL){
+    return a;
+  }
+
+  while(a != NULL && b != NULL){
+    if(a->artist_id > b->artist_id){
+      tmp = b;
+      b = a;
+      a = tmp;
+    }
+
+    if(head == NULL){
+      head = a;
+      curr = a;
+    }else{
+      curr->next = a;
+      curr = curr->next;
+    }
+    a = a->next;
+  }
+  if(a == NULL){
+    curr->next = b;
+  }else{
+    curr->next = a;
+  }
+  return head;
+}
+
+struct artist *asort_artisrid(struct artist *head){
+  struct artist *m = NULL;
+  struct artist *x = NULL;
+  struct artist *y = NULL;
+
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  x = head;
+  m = afind_middle(head);
+  y = m->next;
+  m->next = NULL;
+  return amerge(asort_artisrid(x), asort_artisrid(y));
+}
+
+
+struct artist *asort_playcount(struct artist *head){
+  struct artist *m = NULL;
+  struct artist *x = NULL;
+  struct artist *y = NULL;
+
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  x = head;
+  m = afind_middle(head);
+  y = m->next;
+  m->next = NULL;
+  return amerge(asort_playcount(x), asort_playcount(y));
+}
+
+
 struct artist* sort_artists(struct artist *p , int criterion){
-  struct list {
-    void *val;
-    struct list *next;
-  };
+
   if(criterion == PLAYCOUNT || criterion == ARTISTID ){  
-    
+    while(criterion == PLAYCOUNT){
+      return (asort_playcount(p));
+      break;
+    }
+    while(criterion == ARTISTID){
+      return (asort_artisrid(p));
+      break;
+    }
   }else{
     printf("error: list unsorted");
     return p;
@@ -202,20 +288,22 @@ struct artist* sort_artists(struct artist *p , int criterion){
 }
 
 struct artist *update_counts(struct artist *a, struct play *p){
-  
+  struct play *p_tmp;
+  struct artist *a_tmp;
+  a_tmp = a;
+  p_tmp = p;
+  while(a_tmp){
+      while(p_tmp){
+        if(a_tmp->artist_id == p_tmp->artist_id){
+          a_tmp->playcount += p_tmp->playcount;
+        }
+      p_tmp = p_tmp->next;
+      }
+    a_tmp = a_tmp->next;
+  }
+  return a_tmp;
 }
 
-int count_plays(struct play *head)
-{
-  //printf("countplay\n");
-  struct play *p = head;
-  int i = 0;
-  while(p != NULL){
-    i = i + p->playcount;
-    p = p->next;
-  }
-  return i;
-}
 
 
 struct play *create_play(int id, int artist_id, int playcount)
@@ -338,6 +426,30 @@ void exit_usage() {
 }
 
 int main(int argc, char **argv){
-  exit_usage();
+
+  struct play *p_tmp;
+  struct artist *a_tmp;
+  struct artist *mostp;
+  
+  int count;
+  count = atoi(argv[1]);
+
+  if(argc == 4 && count > 0){
+    p_tmp = read_plays(argv[3]);
+    a_tmp = read_artists(argv[2]);
+    p_tmp = sort_plays(p_tmp);
+    a_tmp = sort_artists(a_tmp, PLAYCOUNT);
+    mostp = update_counts(a_tmp, p_tmp);
+
+    while(count > 0){
+      print_artist(mostp);
+      mostp = mostp->next;
+      count -= 1;
+    }
+
+  }else{
+    exit_usage();
+    }
+  
   return 0;
 }
