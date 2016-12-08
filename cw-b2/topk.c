@@ -19,7 +19,7 @@ struct artist {
 struct play
 {
   int user_id;
-  int artist_id; 
+  int artist_id;
   int playcount;
   struct play *next;
 };
@@ -67,9 +67,8 @@ struct artist *create_artist(int artist_id, char artist_name, int playcount)
 }
 
 struct artist *add_artist(struct artist *head, struct artist *newp)
-{ 
+{
   //printf("addplay\n");
-  struct artist *tmp;
   if(head != NULL){
     if(newp == NULL){
       newp = head;
@@ -83,23 +82,24 @@ struct artist *add_artist(struct artist *head, struct artist *newp)
 struct artist *read_artists(char *fname){
  //printf("read artist\n");
   FILE *fp;
-  struct artist *creatStruct, *readPlays;
-  readPlays = NULL;
+  struct artist *creatStruct, *readArtist;
+  readArtist = NULL;
   fp = fopen(fname, "r");
   if(!fp){
   fprintf(stderr, "error: unable to open %s\n", fname);
   return NULL;
   }
-    int artist_id; 
+    int artist_id;
     char artist_name;
     int playcount = 0;
-    fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
+    fscanf(fp, "%d\t%c",&artist_id, &artist_name);
   while(feof(fp) == 0){
- 
+
     creatStruct = create_artist(artist_id, artist_name, playcount);
-    readPlays = add_artist(readPlays, creatStruct);
-    fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
-  }  
+    readArtist = add_artist(readArtist, creatStruct);
+    //fscanf(fp, "%d\t%65[^\t\n]\n",&artist_id, &artist_name);
+  fscanf(fp, "%d\t%c",&artist_id, &artist_name);
+  }
 //feof() -- return non-zero value if the end of file is reached
 
       if(fclose(fp)){
@@ -107,7 +107,7 @@ struct artist *read_artists(char *fname){
   return NULL;
       }
       free_artist(creatStruct);
-      return readPlays;
+      return readArtist;
 }
 
 void print_artist(struct artist *p)
@@ -115,7 +115,7 @@ void print_artist(struct artist *p)
   if(p == NULL){
     printf("NULL\n");
   }else{
-    printf("%s (%d) [%d]\n", p->artist_name, p->artist_id, p->playcount);
+    printf("%c (%d) [%d]\n", p->artist_name, p->artist_id, p->playcount);
   }
 }
 
@@ -271,7 +271,7 @@ struct artist *asort_playcount(struct artist *head){
 
 struct artist* sort_artists(struct artist *p , int criterion){
 
-  if(criterion == PLAYCOUNT || criterion == ARTISTID ){  
+  while(criterion == PLAYCOUNT || criterion == ARTISTID ){
     while(criterion == PLAYCOUNT){
       return (asort_playcount(p));
       break;
@@ -280,9 +280,12 @@ struct artist* sort_artists(struct artist *p , int criterion){
       return (asort_artisrid(p));
       break;
     }
-  }else{
+    break;
+  }
+    while(criterion != PLAYCOUNT || criterion != ARTISTID){
     printf("error: list unsorted");
     return p;
+    break;
 }
 
 }
@@ -324,7 +327,7 @@ struct play *filter_user(int user_id, struct play *head)
 {
   struct play *tmp, *tmp2, *filtUserLinked = NULL;
   tmp = head;
-  //printf("filter\n"); 
+  //printf("filter\n");
   while(tmp != NULL){
     //printf("filter loop\n");
     if(user_id == tmp->user_id){
@@ -336,7 +339,7 @@ struct play *filter_user(int user_id, struct play *head)
         }
     }
   return filtUserLinked;
-  
+
 }
 
 
@@ -350,14 +353,14 @@ struct play *read_plays(char *file_name){
   fprintf(stderr, "error: unable to open %s\n", file_name);
   return NULL;
   }
-    int user_id, artist_id, playcount; 
+    int user_id, artist_id, playcount;
     fscanf(fp, "%d %d %d", &user_id, &artist_id, &playcount);
   while(feof(fp) == 0){
- 
+
     creatStruct = create_play(user_id, artist_id, playcount);
     readPlays = add_play(readPlays, creatStruct);
     fscanf(fp, "%d %d %d", &user_id, &artist_id, &playcount);
-  }  
+  }
 //feof() -- return non-zero value if the end of file is reached
 
       if(fclose(fp)){
@@ -369,9 +372,8 @@ struct play *read_plays(char *file_name){
 }
 
 struct play *add_play(struct play *head, struct play *newp)
-{ 
+{
   //printf("addplay\n");
-  struct play *tmp;
   if(head != NULL){
     if(newp == NULL){
       newp = head;
@@ -430,13 +432,16 @@ int main(int argc, char **argv){
   struct play *p_tmp;
   struct artist *a_tmp;
   struct artist *mostp;
-  
-  int count;
-  count = atoi(argv[1]);
 
-  if(argc == 4 && count > 0){
-    p_tmp = read_plays(argv[3]);
-    a_tmp = read_artists(argv[2]);
+  int count;
+  //count = atoi(argv[1]);
+  count = 5;
+
+  if(/*argc == 4 &&*/ count > 0){
+    //p_tmp = read_plays(argv[3]);
+    //a_tmp = read_artists(argv[2]);
+    a_tmp = read_artists("~/Documents/G51PGA/cw-b2/artist_data.txt");
+    p_tmp = read_plays("~/Documents/G51PGA/cw-b2/user_artist_data.txt");
     p_tmp = sort_plays(p_tmp);
     a_tmp = sort_artists(a_tmp, PLAYCOUNT);
     mostp = update_counts(a_tmp, p_tmp);
@@ -446,10 +451,12 @@ int main(int argc, char **argv){
       mostp = mostp->next;
       count -= 1;
     }
-
+free_plays(p_tmp);
+free_artists(a_tmp);
+free_artists(mostp);
   }else{
     exit_usage();
     }
-  
+
   return 0;
 }
