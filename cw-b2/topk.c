@@ -27,6 +27,8 @@ struct play
 
 struct artist *read_artists(char *fname);
 struct artist *add_artist(struct artist *head, struct artist *newp);
+struct artist *create_artist(int artist_id, char *artist_name);
+
 void print_artist(struct artist *p);
 void print_artists(struct artist *head);
 struct play *find_middle(struct play *p);
@@ -84,7 +86,7 @@ struct artist *add_artist(struct artist *head, struct artist *newp)
 struct artist *read_artists(char *fname){
  //printf("read artist\n");
   FILE *fp;
-  struct artist  *readArtist, *tmp1 = NULL, *tmp2 = NULL;
+  struct artist  *readArtist;
   readArtist = NULL;
   fp = fopen(fname, "r");
   if(!fp){
@@ -442,26 +444,18 @@ int main(int argc, char **argv){
     p_tmp = read_plays(argv[3]);
 
     p_tmp = sort_plays(p_tmp);
-    a_tmp = sort_artists(a_tmp, PLAYCOUNT);
-    mostp = update_counts(a_tmp, p_tmp);
+    a_tmp = update_counts(a_tmp, p_tmp);
+    mostp = sort_artists(a_tmp, PLAYCOUNT);
 
 
     while(count > 0){
-            while(mostp != NULL){
                 print_artist(mostp);
                 mostp = mostp->next;
                 count -= 1;
-                break;
-            }
-            while(mostp == NULL){
-                count = 0;
-                break;
-            }
-
     }
-free_plays(p_tmp);
-free_artists(a_tmp);
-free_artists(mostp);
+//free_plays(p_tmp);
+//free_artists(a_tmp);
+//free_artists(mostp);
   }else{
     exit_usage();
     }
