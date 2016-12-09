@@ -9,6 +9,7 @@
 struct artist {
     int artist_id;
     //char artist_name[NAMELEN];
+
     char *artist_name;
     int playcount;
     int alt_id;
@@ -50,14 +51,18 @@ void exit_usage();
 
 
 
-
 struct artist *create_artist(int artist_id, char *artist_name)
 {
   //printf("creatplay\n");
   struct artist *a = (struct artist *)malloc(sizeof(struct artist));
   if (a != NULL){
   a->artist_id = artist_id;
+//<<<<<<< HEAD
   a->artist_name = artist_name;
+//=======
+//  strcpy(a->artist_name, artist_name);
+//  a->playcount = playcount;
+//>>>>>>> 11305d2ac81728aee0d11637709acdeb274ce2bb
   a->next = NULL;
   }
   return a;
@@ -79,13 +84,14 @@ struct artist *add_artist(struct artist *head, struct artist *newp)
 struct artist *read_artists(char *fname){
  //printf("read artist\n");
   FILE *fp;
-  struct artist *creatStruct, *readArtist;
+  struct artist  *readArtist, *tmp1 = NULL, *tmp2 = NULL;
   readArtist = NULL;
   fp = fopen(fname, "r");
   if(!fp){
   fprintf(stderr, "error: unable to open %s\n", fname);
   return NULL;
   }
+//<<<<<<< HEAD
     int artist_id;
     char artist_name[NAMELEN];
     char testline[64];
@@ -96,12 +102,27 @@ struct artist *read_artists(char *fname){
         readArtist = add_artist(readArtist, creatStruct);
       }
     }
+//=======
+//
+//  while(feof(fp) == 0){
+//    fscanf(fp, "%d %[^\n]s", &tmp1->artist_id, tmp1->artist_name);
+//    if(strlen(tmp1->artist_name) < 65 && strlen(tmp1->artist_name) > 0){
+//            tmp2 = (struct artist *)calloc(1, sizeof(struct artist));
+//            tmp2->artist_id = tmp1->artist_id;
+//            strcpy(tmp2->artist_name, tmp1->artist_name);
+//            tmp2->playcount = 0;
+//            tmp2->next = readArtist;
+//            readArtist = tmp1;
+//  }
+//  }
+////feof() -- return non-zero value if the end of file is reached
+//>>>>>>> 11305d2ac81728aee0d11637709acdeb274ce2bb
 
       if(fclose(fp)){
   fprintf(stderr, "error: unable to close %s\n", fname);
   return NULL;
       }
-      free_artist(creatStruct);
+      //free_artist(creatStruct);
       return readArtist;
 }
 
@@ -110,7 +131,7 @@ void print_artist(struct artist *p)
   if(p == NULL){
     printf("NULL\n");
   }else{
-    printf("%c (%d) [%d]\n", p->artist_name, p->artist_id, p->playcount);
+    printf("%s (%d) [%d]\n", p->artist_name, p->artist_id, p->playcount);
   }
 }
 
@@ -414,18 +435,29 @@ int main(int argc, char **argv){
   int count;
   count = atoi(argv[1]);
 
-  if(argc == 4 && count > 0){
-    p_tmp = read_plays(argv[3]);
+  if(argc == 4 &&  count > 0){
+    //p_tmp = read_plays(argv[3]);
+    //a_tmp = read_artists(argv[2]);
     a_tmp = read_artists(argv[2]);
+    p_tmp = read_plays(argv[3]);
+
     p_tmp = sort_plays(p_tmp);
     a_tmp = sort_artists(a_tmp, PLAYCOUNT);
     mostp = update_counts(a_tmp, p_tmp);
 
 
     while(count > 0){
-      print_artist(mostp);
-      mostp = mostp->next;
-      count -= 1;
+            while(mostp != NULL){
+                print_artist(mostp);
+                mostp = mostp->next;
+                count -= 1;
+                break;
+            }
+            while(mostp == NULL){
+                count = 0;
+                break;
+            }
+
     }
 free_plays(p_tmp);
 free_artists(a_tmp);
