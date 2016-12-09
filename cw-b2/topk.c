@@ -38,6 +38,7 @@ struct play *sort_plays(struct play *head);
 struct artist *afind_middle(struct artist *p);
 struct artist *amerge(struct artist *a, struct artist *b);
 struct artist *asort_artisrid(struct artist *head);
+struct artist *amergepc(struct artist *a, struct artist *b);
 struct artist *asort_playcount(struct artist *head);
 
 struct artist* sort_artists(struct artist *p , int criterion);
@@ -50,6 +51,8 @@ void free_artists(struct artist *p);
 void free_plays(struct play *p);
 void free_play(struct play *p);
 void exit_usage();
+
+
 
 
 
@@ -255,7 +258,43 @@ struct artist *amerge(struct artist *a, struct artist *b){
   return head;
 }
 
-struct artist *asort_artisrid(struct artist *head){
+struct artist *amergepc(struct artist *a, struct artist *b){
+  struct artist *tmp = NULL;
+  struct artist *head = NULL;
+  struct artist *curr = NULL;
+
+  if(b == NULL){
+    return b;
+  }else if(b == NULL){
+    return a;
+  }
+
+  while(a != NULL && b != NULL){
+    if(a->playcount > b->playcount){
+      tmp = b;
+      b = a;
+      a = tmp;
+    }
+
+    if(head == NULL){
+      head = a;
+      curr = a;
+    }else{
+      curr->next = a;
+      curr = curr->next;
+    }
+    a = a->next;
+  }
+  if(a == NULL){
+    curr->next = b;
+  }else{
+    curr->next = a;
+  }
+  return head;
+}
+
+
+struct artist *asort_artistid(struct artist *head){
   struct artist *m = NULL;
   struct artist *x = NULL;
   struct artist *y = NULL;
@@ -267,7 +306,7 @@ struct artist *asort_artisrid(struct artist *head){
   m = afind_middle(head);
   y = m->next;
   m->next = NULL;
-  return amerge(asort_artisrid(x), asort_artisrid(y));
+  return amerge(asort_artistid(x), asort_artistid(y));
 }
 
 
@@ -283,7 +322,7 @@ struct artist *asort_playcount(struct artist *head){
   m = afind_middle(head);
   y = m->next;
   m->next = NULL;
-  return amerge(asort_playcount(x), asort_playcount(y));
+  return amergepc(asort_playcount(x), asort_playcount(y));
 }
 
 
@@ -295,7 +334,7 @@ struct artist* sort_artists(struct artist *p , int criterion){
       break;
     }
     while(criterion == ARTISTID){
-      return (asort_artisrid(p));
+      return (asort_artistid(p));
       break;
     }
     break;
@@ -313,6 +352,8 @@ struct artist *update_counts(struct artist *a, struct play *p){
   struct artist *a_tmp;
   a_tmp = a;
   p_tmp = p;
+  a_tmp = sort_artists(a_tmp, ARTISTID);
+  p_tmp = sort_plays(p_tmp);
   while(a_tmp){
       while(p_tmp){
         if(a_tmp->artist_id == p_tmp->artist_id){
@@ -438,21 +479,20 @@ int main(int argc, char **argv){
   count = atoi(argv[1]);
 
   if(argc == 4 &&  count > 0){
-    //p_tmp = read_plays(argv[3]);
-    //a_tmp = read_artists(argv[2]);
-    a_tmp = read_artists(argv[2]);
     p_tmp = read_plays(argv[3]);
+    a_tmp = read_artists(argv[2]);
 
-    p_tmp = sort_plays(p_tmp);
     a_tmp = update_counts(a_tmp, p_tmp);
-    mostp = sort_artists(a_tmp, PLAYCOUNT);
+    print_artists(a_tmp);
+    //mostp = sort_artists(a_tmp, PLAYCOUNT);
 
 
-    while(count > 0){
-                print_artist(mostp);
-                mostp = mostp->next;
-                count -= 1;
-    }
+//    while(count > 0){
+//                print_artist(mostp);
+//                mostp = mostp->next;
+//                count -= 1;
+//
+//    }
 //free_plays(p_tmp);
 //free_artists(a_tmp);
 //free_artists(mostp);
